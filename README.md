@@ -5,11 +5,14 @@ Karthik Ayyar <karthik@houseofkodai.in>
 20130810
 
 1. Introduction
----------------
+===============
    An Open Data Element (ODE) is a self-defining structure of data that
-   is easy to generate and parse. ODE is a basic building block
-   file-formats and network-protocols. Network-protocols are essentially
-   exchange of ODE between peers; This ODE eXchange is known as OX.
+   is easy to generate and parse.
+
+   ODE is a basic building block for file-formats and network-protocols. 
+   Network-protocols are essentially exchange of ODE between peers; 
+   This ODE eXchange is known as OX. A network of nodes communicating 
+   ODEs via. OX is known as Open Data Interface Network (ODIN).
 
    Although each element is restricted in size of upto 65533
    (2^16:65536-3) bytes, larger data can be encoded as a sequence of
@@ -21,27 +24,30 @@ Karthik Ayyar <karthik@houseofkodai.in>
    defining the type-table ODE. It is anticipated that application
    developers will publish ODE type-tables encouraging interoperability.
 
-   A network of nodes communicating ODEs via. OX is known as Open Data
-   Interface Network (ODIN).
-
 2. Definition
--------------
-   [Size][Type][Data]
-    [2 bytes Size]
-    [1 byte Type]
-    [(Size-1) bytes Data]
+=============
 
-   [Size]
-    for UDP packets, refers to sequence number, as size is implicit
-    intended for jitter-buffers to deal with out-of-order/delayed
-    packets.
+[Size] [[Type] [Data]]
+----------------------
 
-   [Type]
-    1 bit of fragment-flag (left-most-bit fragment-flag)
-    7 bits of type (decimal values 0-127)
+### [Size]
+   * 2 bytes
+   * network byte order
+   * for UDP packets, refers to sequence number, as size is implicit 
+     intended for jitter-buffers to deal with out-of-order/delayed 
+     packets.
+
+### [Type]
+   * 1 byte
+   * 1 bit of fragment-flag (left-most-bit fragment-flag)
+   * 7 bits of type (decimal values 0-127)
+
+### [Data]
+   * (size-1) bytes
+
 
 3. ODE0: Reserved Type Table Definition
----------------------------------------
+=======================================
      Type Description
      ----------------
      58 : Type-table definition
