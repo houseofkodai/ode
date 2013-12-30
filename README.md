@@ -2,26 +2,28 @@ Open Data Element (ODE)
 =======================
 Karthik Ayyar <karthik@houseofkodai.in>
 
-20130810
+20131230
 
 1. Introduction
 ===============
    An Open Data Element (ODE) is a self-defining structure of data that
-   is easy to generate and parse.
+   is **easy** to generate and **safe** to parse.
 
-   ODE is a basic building block for file-formats and network-protocols. 
-   Network-protocols are essentially exchange of ODE between peers; 
-   This ODE eXchange is known as OX. A network of nodes communicating 
+   ODE is a basic building block for file-formats and network-protocols.
+   Network-protocols are essentially exchange of ODE between peers;
+   This ODE eXchange is known as OX. A network of nodes communicating
    ODEs via. OX is known as Open Data Interface Network (ODIN).
 
-   Although each element is restricted in size of upto 65533
-   (2^16:65536-3) bytes, larger data can be encoded as a sequence of
-   ODEs.
+   Although each element would seem restricted in size of upto 65533
+   (2^16:65536-3) bytes, any length of data can be accomodated by
+   encoding it as a sequence of fragmented ODEs. For example, a 2-byte
+   fragmentation-header (id/count) extends the maximum size of each
+   element to, almost 16MB (256 * 65531 = 16775936 bytes).
 
    ODE can be used recursively; an ODE can contain other ODEs.
 
    Defining file-formats and network-protocols is as simple as
-   defining the type-table ODE. It is anticipated that application
+   defining the ODE type-table. It is anticipated that application
    developers will publish ODE type-tables encouraging interoperability.
 
 2. Definition
@@ -32,64 +34,87 @@ Karthik Ayyar <karthik@houseofkodai.in>
 
 ### [Size]
    * 2 bytes
-   * network byte order
-   * for UDP packets, refers to sequence number, as size is implicit 
-     intended for jitter-buffers to deal with out-of-order/delayed 
+   * for UDP packets, refers to sequence number, as size is implicit
+     intended for jitter-buffers to deal with out-of-order/delayed
      packets.
 
 ### [Type]
    * 1 byte
-   * 1 bit of fragment-flag (left-most-bit fragment-flag)
+   * 1 bit of fragment-flag (highest-bit fragment-flag)
    * 7 bits of type (decimal values 0-127)
 
 ### [Data]
    * (size-1) bytes
 
+note:
+  * all bytes are Network byte order
+  * for textual formats size and type can be specified as %%type\n
+    enabling easy parsing/translation of %%type\n into
+    3-byte [size][type]
+  * human readable text formats can use \n as type-data seperator
+    and characters between type and \n as a comment
+  * human readable type definition is either printable character or
+    \nnn numeric value of type (0-127)
 
-3. ODE0: Reserved Type Table Definition
-=======================================
+3. 0.ODE: Reserved Type Table Definition
+========================================
      Type Description
      ----------------
      58 : Type-table definition
-          [0+ bytes space delimiter]
-          [numeric-string ASCII value of Type]
-          [1 byte space delimiter]
+          [* 0-or-more bytes space delimiter]
+          [numeric-string ASCII value (<127) of Type]
+          [1+ bytes space delimiter]
           [description]
           [2 byte \n\n new-line new-line description terminator]
+
+      0   Block of Bytes
+          [description]
+          [1 byte \0 null terminator]
+          [data bytes]
+          useful for encapsulating files.
+
+     42 * Group of elements
+          [numeric-string number of elements]
+          [1 byte space delimiter]
+          [zero or more ODElements]
+          multiplex multiple elements into a single element/packet
+
+     46 . Pointer/Index to previous element
+          [2-byte previous-element-offset]
+          [(size-2) bytes unique-marker]
+          random-file-seek: search for unique-marker and then
+          traverse first to previous-element and then to other elements
+          as required.
 
      33 ! Identity Element
           1-byte space delimited words
           [id] [status] [params...]
           ! karthik idle version x microphone camera tv speaker
 
-     42 * Group of elements
-          [numeric-string number of elements]
-          [1 byte ASCII non-numeric delimiter]
-          [ODElements]
-          multiplex multiple elements into a single element/packet
-
      63 ? Request
-          [command] [params...]
+          [reQuest id]
+          [1 byte space delimiter]
+          [command]
+          [1 byte space delimiter]
+          [params...]
+
+     61 = Response-pending
+          [reQuest id]
+          [pending status descripton]
 
      43 + Response-success
+          [reQuest id]
+          [1 byte space delimiter]
           [response data]
 
      45 - Response-failure
+          [reQuest id]
+          [1 byte space delimiter]
           [error code numeric]
           [1 byte space delimiter]
           [error code description]
 
-     61 = Response-redirect
+     62 > Response-redirect
+          [reQuest id]
+          [1 byte space delimiter]
           [redirect URL]
-
-      0   Bytes
-          [name]
-          [1 byte \0 null terminator]
-          [data bytes]
-          useful for encapsulating files.
-
-     46 . Pointer/Index to previous element
-          [2-byte previous-element-offset]
-          [(size-2) bytes unique-marker]
-          random-file-seek: search for unique-marker and then
-          traverse elements as required.
