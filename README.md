@@ -56,8 +56,8 @@ note:
   * human readable type definition is either printable character or
     \nnn numeric value of type (0-127)
 
-3. 0.ODE: Reserved Type Table Definition
-========================================
+3. Reserved Type Table Definition (0.ode)
+=========================================
      Type Description
      ----------------
      58 : Type-table definition
